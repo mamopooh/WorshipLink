@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorshipLink — コミュニティ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Lato:wght@400;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0b0f1a;
+    --surface: #131929;
+    --surface2: #1a2236;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8eaf2;
+    --text2: #8a90a8;
+    --text3: #5a6080;
+    --accent: #7c6cf8;
+    --accent2: #a59bff;
+    --accent-bg: rgba(124,108,248,0.12);
+    --accent-border: rgba(124,108,248,0.28);
+    --gold: #f0c060;
+    --gold-bg: rgba(240,192,96,0.10);
+    --green: #50c896;
+    --green-bg: rgba(80,200,150,0.10);
+    --red: #f06070;
+    --red-bg: rgba(240,96,112,0.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ===== LAYOUT ===== */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11,15,26,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border2);
+    padding: 0 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .logo {
+    font-family: 'Lato', sans-serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo-cross {
+    width: 22px; height: 22px;
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .logo-cross::before, .logo-cross::after {
+    content: '';
+    position: absolute;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .logo-cross::before { width: 4px; height: 22px; }
+  .logo-cross::after  { width: 22px; height: 4px; }
+  .logo span { color: var(--accent2); }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .avatar-sm {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; flex-shrink: 0;
+  }
+
+  .main { display: flex; max-width: 960px; margin: 0 auto; width: 100%; padding: 1.5rem 1rem; gap: 1.5rem; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar { width: 220px; flex-shrink: 0; }
+  .sidebar-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .sidebar-title { font-size: 11px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 10px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--text2);
+    cursor: pointer; margin-bottom: 2px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent2); }
+  .nav-icon { font-size: 16px; width: 18px; text-align: center; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: var(--surface2); color: var(--text2);
+    border: 0.5px solid var(--border); cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tag:hover { background: var(--accent-bg); color: var(--accent2); border-color: var(--accent-border); }
+  .tag.active { background: var(--accent-bg); color: var(--accent2); border-color: var(--accent-border); }
+
+  /* ===== FEED ===== */
+  .feed { flex: 1; min-width: 0; }
+
+  /* Post composer */
+  .composer {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .composer-top { display: flex; gap: 10px; align-items: flex-start; }
+  .composer textarea {
+    flex: 1;
+    background: var(--surface2);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    min-height: 72px;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .composer textarea:focus { border-color: var(--accent-border); }
+  .composer textarea::placeholder { color: var(--text3); }
+  .composer-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-left: 44px; }
+  .tag-select {
+    background: var(--surface2);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text2);
+    font-size: 12px;
+    padding: 5px 8px;
+    outline: none;
+    cursor: pointer;
+  }
+  .btn {
+    padding: 7px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    border: none; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 0.5px solid var(--border2); }
+
+  /* Post card */
+  .post-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .post-card:hover { border-color: var(--border2); }
+  .post-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .post-meta { flex: 1; }
+  .post-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .post-info { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .post-tag {
+    font-size: 11px; padding: 2px 9px; border-radius: 20px;
+    background: var(--accent-bg); color: var(--accent2);
+    border: 0.5px solid var(--accent-border);
+    white-space: nowrap;
+  }
+  .post-body { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 12px; }
+  .post-actions { display: flex; gap: 4px; }
+  .action-btn {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--text3);
+    background: none; border: none; cursor: pointer;
+    padding: 6px 10px; border-radius: var(--radius-sm);
+    transition: background 0.15s, color 0.15s;
+  }
+  .action-btn:hover { background: var(--surface2); color: var(--text2); }
+  .action-btn.liked { color: var(--red); }
+  .action-btn.liked:hover { background: var(--red-bg); }
+  .action-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  /* Comments */
+  .comments-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--border);
+    display: none;
+  }
+  .comments-section.open { display: block; }
+  .comment-item {
+    display: flex; gap: 8px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .comment-item:last-child { border-bottom: none; }
+  .comment-body { flex: 1; }
+  .comment-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .comment-text { font-size: 13px; color: var(--text2); }
+  .comment-composer { display: flex; gap: 8px; margin-top: 10px; }
+  .comment-composer input {
+    flex: 1;
+    background: var(--surface2);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+  .comment-composer input:focus { border-color: var(--accent-border); }
+  .comment-composer input::placeholder { color: var(--text3); }
+
+  /* AI assist */
+  .ai-box {
+    background: var(--accent-bg);
+    border: 0.5px solid var(--accent-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 13px; color: var(--accent2);
+    display: none;
+  }
+  .ai-box.show { display: block; }
+  .ai-loading { display: flex; align-items: center; gap: 8px; }
+  .dot-pulse { display: flex; gap: 4px; }
+  .dot-pulse span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent2); opacity: 0.4;
+    animation: pulse 1.2s infinite;
+  }
+  .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--text3); font-size: 14px;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface2); border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 10px 20px;
+    font-size: 13px; color: var(--text2);
+    opacity: 0; transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none; z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Profile modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 300;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    width: 340px; max-width: 90vw;
+  }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 1rem; }
+  .modal label { font-size: 12px; color: var(--text3); display: block; margin-bottom: 4px; }
+  .modal input, .modal select {
+    width: 100%; background: var(--surface2);
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    padding: 8px 10px; color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif; font-size: 13px;
+    outline: none; margin-bottom: 12px;
+  }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+  @media (max-width: 680px) {
+    .sidebar { display: none; }
+    .main { padding: 1rem 0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-cross"></div>
+    Worship<span>Link</span>
+  </div>
+  <div class="header-right">
+    <div class="avatar-sm" id="headerAvatar" onclick="openProfile()" title="プロフィール設定"></div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">メニュー</div>
+      <div class="nav-item active" onclick="filterTag('')">
+        <span class="nav-icon">🏠</span> すべての投稿
+      </div>
+      <div class="nav-item" onclick="filterTag('初めての方へ')">
+        <span class="nav-icon">🌱</span> 初めての方へ
+      </div>
+      <div class="nav-item" onclick="filterTag('日常の恵み')">
+        <span class="nav-icon">☀️</span> 日常の恵み
+      </div>
+      <div class="nav-item" onclick="filterTag('祈り')">
+        <span class="nav-icon">🙏</span> 祈りの課題
+      </div>
+      <div class="nav-item" onclick="filterTag('賛美')">
+        <span class="nav-icon">🎵</span> 賛美・礼拝
+      </div>
+      <div class="nav-item" onclick="filterTag('スタジオ')">
+        <span class="nav-icon">🎹</span> スタジオ情報
+      </div>
+      <div class="nav-item" onclick="filterTag('募集')">
+        <span class="nav-icon">📢</span> メンバー募集
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">タグで探す</div>
+      <div class="tag-list" id="tagList">
+        <span class="tag" onclick="filterTag('初めての方へ')">初めての方へ</span>
+        <span class="tag" onclick="filterTag('日常の恵み')">日常の恵み</span>
+        <span class="tag" onclick="filterTag('祈り')">祈り</span>
+        <span class="tag" onclick="filterTag('証し')">証し</span>
+        <span class="tag" onclick="filterTag('賛美')">賛美</span>
+        <span class="tag" onclick="filterTag('礼拝')">礼拝</span>
+        <span class="tag" onclick="filterTag('スタジオ')">スタジオ</span>
+        <span class="tag" onclick="filterTag('募集')">募集</span>
+        <span class="tag" onclick="filterTag('ライブ')">ライブ</span>
+        <span class="tag" onclick="filterTag('質問')">質問</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- FEED -->
+  <main class="feed">
+
+    <!-- Composer -->
+    <div class="composer">
+      <div class="composer-top">
+        <div class="avatar-sm" id="composerAvatar" style="font-size:13px;font-weight:700;"></div>
+        <textarea id="postText" placeholder="今日あった恵み、祈り課題、質問など、なんでも分かち合ってください…" rows="3"></textarea>
+      </div>
+      <div class="composer-footer">
+        <select class="tag-select" id="postTag">
+          <option value="日常の恵み">☀️ 日常の恵み</option>
+          <option value="初めての方へ">🌱 初めての方へ</option>
+          <option value="祈り">🙏 祈り</option>
+          <option value="証し">✨ 証し</option>
+          <option value="質問">❓ 質問</option>
+          <option value="賛美">🎵 賛美</option>
+          <option value="礼拝">⛪ 礼拝</option>
+          <option value="スタジオ">🎹 スタジオ</option>
+          <option value="募集">📢 募集</option>
+          <option value="ライブ">🎤 ライブ</option>
+        </select>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="aiAssist()">✦ AI応援</button>
+          <button class="btn btn-primary" onclick="submitPost()">投稿する</button>
+        </div>
+      </div>
+      <div class="ai-box" id="aiBox">
+        <div class="ai-loading" id="aiLoading">
+          <span>神様からの励ましを受け取っています</span>
+          <div class="dot-pulse"><span></span><span></span><span></span></div>
+        </div>
+        <div id="aiResult" style="display:none;line-height:1.7;"></div>
+      </div>
+    </div>
+
+    <!-- Feed -->
+    <div id="feedList"></div>
+
+  </main>
+</div>
+
+<!-- Profile Modal -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal">
+    <h3>プロフィール設定</h3>
+    <label>お名前</label>
+    <input id="pName" type="text" placeholder="例：田中めぐみ">
+    <label>所属教会・グループ（なければ空欄でOK）</label>
+    <input id="pChurch" type="text" placeholder="例：大阪ホープチャーチ、ゴスペル合唱団など">
+    <label>あなたはどんな参加者ですか？</label>
+    <select id="pRole">
+      <optgroup label="— 音楽・礼拝 —">
+        <option value="ワーシップリーダー">ワーシップリーダー</option>
+        <option value="ピアノ奏者">ピアノ奏者</option>
+        <option value="ギタリスト">ギタリスト</option>
+        <option value="ヴォーカリスト">ヴォーカリスト</option>
+        <option value="ドラマー">ドラマー</option>
+        <option value="ベーシスト">ベーシスト</option>
+        <option value="その他演奏者">その他演奏者</option>
+      </optgroup>
+      <optgroup label="— 教会・信仰 —">
+        <option value="牧師・伝道師">牧師・伝道師</option>
+        <option value="教会スタッフ">教会スタッフ</option>
+        <option value="信徒（クリスチャン）">信徒（クリスチャン）</option>
+        <option value="求道中">求道中（キリスト教に興味がある）</option>
+        <option value="礼拝に来てみた">礼拝に来てみた</option>
+      </optgroup>
+      <optgroup label="— 一般参加 —">
+        <option value="音楽が好き">音楽が好き</option>
+        <option value="祈りに関心がある">祈りに関心がある</option>
+        <option value="コミュニティを探している">コミュニティを探している</option>
+        <option value="友人に誘われた">友人に誘われた</option>
+        <option value="その他">その他</option>
+      </optgroup>
+    </select>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeProfile()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveProfile()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+const COLORS = ['#7c6cf8','#50c896','#f0c060','#f06070','#60b0f0','#c878f0'];
+let state = {
+  profile: { name: '', church: '', role: 'ピアノ奏者' },
+  posts: [],
+  filter: ''
+};
+
+// ===== SEED DATA =====
+const seedPosts = [
+  {
+    id: 1, name: '木村さくら', church: '未所属（求道中）', role: '求道中',
+    tag: '初めての方へ', color: COLORS[4],
+    text: '友人に誘われて初めて礼拝に参加しました。讃美歌を聴いていたら、なぜか涙が出てきました。音楽ってこんなに心に響くんですね。クリスチャンでなくても、ここに投稿してもいいですか？🌱',
+    time: '30分前', likes: 38, liked: false,
+    comments: [
+      { name: '田中めぐみ', text: 'もちろんです！ここはみんなの場所ですよ。また来てください😊', color: COLORS[0] },
+      { name: '佐藤ヨハネ', text: '涙が出るのは心が動いているサイン。神様があなたに語りかけているのかもしれません', color: COLORS[3] }
+    ]
+  },
+  {
+    id: 2, name: '中村たかし', church: '大阪・ホープチャーチ', role: '信徒（クリスチャン）',
+    tag: '日常の恵み', color: COLORS[5],
+    text: '今日バスに乗り遅れたと思ったら、ちょうど友人と偶然会えて、久々に話せました。小さなことだけど、神様の計らいを感じました☀️　皆さんの今日の恵みは何でしたか？',
+    time: '1時間前', likes: 22, liked: false,
+    comments: [
+      { name: '木村さくら', text: 'そういう小さな出来事に気づける感性が素敵です', color: COLORS[4] }
+    ]
+  },
+  {
+    id: 3, name: '田中めぐみ', church: '大阪・ホープチャーチ', role: 'ピアノ奏者',
+    tag: '賛美', color: COLORS[0],
+    text: '先週の礼拝でピアノを弾かせていただきました。神様の臨在を感じる素晴らしい時間でした。一緒に賛美してくださった皆さんに感謝します！次回のワーシップチームでも一緒に演奏できることを楽しみにしています🎹',
+    time: '2時間前', likes: 24, liked: false,
+    comments: [
+      { name: '山下ダビデ', text: '素晴らしい証しですね。神様に感謝します！', color: COLORS[1] },
+      { name: '伊藤ルツ', text: '一緒に賛美できて光栄でした。またぜひ！', color: COLORS[2] }
+    ]
+  },
+  {
+    id: 4, name: '鈴木はるか', church: '未登録', role: '音楽が好き',
+    tag: '質問', color: COLORS[2],
+    text: 'クリスチャンではないのですが、ゴスペルが大好きで合唱団に入っています。WorshipLinkのイベントに一般の人も参加できますか？どんな雰囲気か気になっています😊',
+    time: '4時間前', likes: 19, liked: false,
+    comments: [
+      { name: '佐藤ヨハネ', text: 'もちろん！信仰に関係なく歓迎しています。ぜひ来てください🎵', color: COLORS[3] },
+      { name: '山下ダビデ', text: 'ゴスペル好きなら絶対楽しめますよ。次のオープン礼拝に来てみてください', color: COLORS[1] }
+    ]
+  },
+  {
+    id: 5, name: '山下ダビデ', church: '東京・恵比寿チャーチ', role: 'ギタリスト',
+    tag: 'スタジオ', color: COLORS[1],
+    text: '防音完備のホームスタジオを開放しています。練習場所をお探しの方はメッセージください。初心者も大歓迎です🎸　場所：渋谷区　設備：ギター・ベース・ドラムセットあり　費用：無料（奉仕として）',
+    time: '5時間前', likes: 15, liked: false,
+    comments: [
+      { name: '鈴木はるか', text: 'ぜひ使わせてください！ゴスペルの練習にも使えますか？', color: COLORS[2] },
+      { name: '山下ダビデ', text: 'もちろんです！お気軽にどうぞ😊', color: COLORS[1] }
+    ]
+  },
+  {
+    id: 6, name: '伊藤ルツ', church: '名古屋・グレースチャーチ', role: 'ヴォーカリスト',
+    tag: '祈り', color: COLORS[2],
+    text: '今、仕事で難しい局面を迎えています。どうか祈っていただけたら嬉しいです。「求めなさい。そうすれば与えられます」という言葉を信じて、前に進もうと思います。みなさんの祈りに感謝します🙏',
+    time: '1日前', likes: 41, liked: false,
+    comments: [
+      { name: '中村たかし', text: '一緒に祈っています。主があなたに知恵と平安を与えてくださいますように', color: COLORS[5] }
+    ]
+  }
+];
+
+// ===== INIT =====
+function init() {
+  const saved = localStorage.getItem('wl_state_v2');
+  if (saved) {
+    try { state = JSON.parse(saved); } catch(e) {}
+  }
+  if (!state.posts || state.posts.length === 0) {
+    state.posts = seedPosts;
+  }
+  if (!state.profile) state.profile = { name: '', church: '', role: '信徒（クリスチャン）' };
+  renderProfile();
+  renderFeed();
+}
+
+function save() {
+  localStorage.setItem('wl_state_v2', JSON.stringify(state));
+}
+
+// ===== PROFILE =====
+function getInitials(name) {
+  if (!name) return '?';
+  return name.charAt(0);
+}
+function getColor(name) {
+  if (!name) return COLORS[0];
+  return COLORS[name.charCodeAt(0) % COLORS.length];
+}
+function renderProfile() {
+  const { name, role } = state.profile;
+  const color = getColor(name || '?');
+  const initials = getInitials(name || '?');
+  ['headerAvatar','composerAvatar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.background = color + '28';
+      el.style.border = '1.5px solid ' + color + '60';
+      el.style.color = color;
+      el.textContent = initials;
+    }
+  });
+  if (!name) setTimeout(() => openProfile(), 600);
+}
+function openProfile() {
+  document.getElementById('pName').value = state.profile.name || '';
+  document.getElementById('pChurch').value = state.profile.church || '';
+  document.getElementById('pRole').value = state.profile.role || 'ピアノ奏者';
+  document.getElementById('profileModal').classList.add('open');
+}
+function closeProfile() {
+  document.getElementById('profileModal').classList.remove('open');
+}
+function saveProfile() {
+  state.profile.name = document.getElementById('pName').value.trim() || 'ゲスト';
+  state.profile.church = document.getElementById('pChurch').value.trim();
+  state.profile.role = document.getElementById('pRole').value;
+  save();
+  renderProfile();
+  closeProfile();
+  showToast('プロフィールを保存しました');
+}
+
+// ===== POSTS =====
+function submitPost() {
+  const text = document.getElementById('postText').value.trim();
+  if (!text) { showToast('投稿内容を入力してください'); return; }
+  const name = state.profile.name || 'ゲスト';
+  const post = {
+    id: Date.now(),
+    name,
+    church: state.profile.church || '未設定',
+    role: state.profile.role,
+    tag: document.getElementById('postTag').value,
+    color: getColor(name),
+    text,
+    time: 'たった今',
+    likes: 0, liked: false,
+    comments: []
+  };
+  state.posts.unshift(post);
+  save();
+  document.getElementById('postText').value = '';
+  document.getElementById('aiBox').classList.remove('show');
+  renderFeed();
+  showToast('投稿しました 🙌');
+}
+
+function toggleLike(id) {
+  const post = state.posts.find(p => p.id === id);
+  if (!post) return;
+  post.liked = !post.liked;
+  post.likes += post.liked ? 1 : -1;
+  save();
+  renderFeed();
+}
+
+function toggleComments(id) {
+  const el = document.getElementById('comments-' + id);
+  if (el) el.classList.toggle('open');
+}
+
+function submitComment(id) {
+  const input = document.getElementById('cinput-' + id);
+  const text = input.value.trim();
+  if (!text) return;
+  const post = state.posts.find(p => p.id === id);
+  if (!post) return;
+  post.comments.push({
+    name: state.profile.name || 'ゲスト',
+    text,
+    color: getColor(state.profile.name || '?')
+  });
+  input.value = '';
+  save();
+  renderFeed();
+  const el = document.getElementById('comments-' + id);
+  if (el) el.classList.add('open');
+}
+
+function filterTag(tag) {
+  state.filter = tag;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tag').forEach(el => { el.classList.toggle('active', el.textContent === tag); });
+  renderFeed();
+}
+
+function renderFeed() {
+  const list = document.getElementById('feedList');
+  const posts = state.filter
+    ? state.posts.filter(p => p.tag === state.filter)
+    : state.posts;
+
+  if (posts.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🕊️</div>まだ投稿がありません。<br>最初の一歩を踏み出してみてください。</div>`;
+    return;
+  }
+
+  list.innerHTML = posts.map(p => `
+    <div class="post-card" id="post-${p.id}">
+      <div class="post-header">
+        <div class="avatar-sm" style="background:${p.color}28;border:1.5px solid ${p.color}60;color:${p.color};font-size:13px;font-weight:700;">${getInitials(p.name)}</div>
+        <div class="post-meta">
+          <div class="post-name">${esc(p.name)}</div>
+          <div class="post-info">${esc(p.church)} · ${esc(p.role)} · ${esc(p.time)}</div>
+        </div>
+        <span class="post-tag">${esc(p.tag)}</span>
+      </div>
+      <div class="post-body">${esc(p.text).replace(/\n/g,'<br>')}</div>
+      <div class="post-actions">
+        <button class="action-btn ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">
+          <svg viewBox="0 0 24 24" fill="${p.liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          ${p.likes}
+        </button>
+        <button class="action-btn" onclick="toggleComments(${p.id})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          ${p.comments.length} コメント
+        </button>
+      </div>
+      <div class="comments-section" id="comments-${p.id}">
+        ${p.comments.map(c => `
+          <div class="comment-item">
+            <div class="avatar-sm" style="background:${c.color}28;border:1.5px solid ${c.color}60;color:${c.color};font-size:11px;font-weight:700;width:28px;height:28px;flex-shrink:0;">${getInitials(c.name)}</div>
+            <div class="comment-body">
+              <div class="comment-name">${esc(c.name)}</div>
+              <div class="comment-text">${esc(c.text)}</div>
+            </div>
+          </div>`).join('')}
+        <div class="comment-composer">
+          <div class="avatar-sm" style="background:${getColor(state.profile.name||'?')}28;border:1.5px solid ${getColor(state.profile.name||'?')}60;color:${getColor(state.profile.name||'?')};font-size:11px;font-weight:700;width:28px;height:28px;flex-shrink:0;">${getInitials(state.profile.name||'?')}</div>
+          <input id="cinput-${p.id}" type="text" placeholder="コメントを入力…" onkeydown="if(event.key==='Enter')submitComment(${p.id})">
+          <button class="btn btn-primary" style="padding:5px 12px;font-size:12px;" onclick="submitComment(${p.id})">送信</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== AI ASSIST =====
+async function aiAssist() {
+  const text = document.getElementById('postText').value.trim();
+  const box = document.getElementById('aiBox');
+  const loading = document.getElementById('aiLoading');
+  const result = document.getElementById('aiResult');
+
+  box.classList.add('show');
+  loading.style.display = 'flex';
+  result.style.display = 'none';
+
+  try {
+    const prompt = text
+      ? `WorshipLinkというコミュニティアプリで、クリスチャンも一般の方も参加しています。以下の投稿内容に対して、信仰の有無に関わらず誰でも受け取れる、温かく寄り添う励ましのメッセージ（3〜4文）を日本語で書いてください。必要であれば聖書のみことばも自然に添えてください。投稿内容：「${text}」`
+      : `WorshipLinkというコミュニティアプリです。クリスチャンも一般の方も参加しています。今日の恵みや祈り課題など、誰でも気軽に投稿できるよう、温かく背中を押すメッセージ（3〜4文）を日本語で書いてください。`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const msg = data.content?.map(b => b.text||'').join('') || '神様があなたを励ましてくださいます。';
+    loading.style.display = 'none';
+    result.style.display = 'block';
+    result.textContent = msg;
+  } catch(e) {
+    loading.style.display = 'none';
+    result.style.display = 'block';
+    result.textContent = '「いつも主にあって喜びなさい。もう一度言います。喜びなさい。」（ピリピ4:4）あなたの賛美は神様に届いています。今日も感謝をもって分かち合ってください🕊️';
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('profileModal').addEventListener('click', function(e) {
+  if (e.target === this) closeProfile();
+});
+
+init();
+</script>
+</body>
+</html>
