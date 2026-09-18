@@ -99,6 +99,19 @@
   .loading-bar { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; }
   .online-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--green); background: var(--green-bg); padding: 3px 10px; border-radius: 20px; }
   .online-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  .admin-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #f0c060; background: rgba(240,192,96,0.12); padding: 3px 10px; border-radius: 20px; border: 0.5px solid rgba(240,192,96,0.3); }
+  .btn-danger { background: rgba(240,96,112,0.15); color: var(--red); border: 0.5px solid rgba(240,96,112,0.3); font-size: 12px; padding: 5px 10px; }
+  .btn-danger:hover { background: rgba(240,96,112,0.25); opacity: 1; }
+  .btn-block { background: rgba(240,192,96,0.12); color: #f0c060; border: 0.5px solid rgba(240,192,96,0.3); font-size: 12px; padding: 5px 10px; }
+  .btn-block:hover { background: rgba(240,192,96,0.22); opacity: 1; }
+  .blocked-notice { text-align:center; padding: 8px; font-size:12px; color: var(--text3); font-style: italic; }
+  .admin-panel { background: rgba(240,192,96,0.06); border: 0.5px solid rgba(240,192,96,0.2); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .admin-panel-title { font-size: 12px; color: #f0c060; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px; }
+  .blocked-list { font-size: 12px; color: var(--text2); }
+  .blocked-user-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 0.5px solid var(--border); }
+  .confirm-modal { background: var(--surface); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 1.5rem; width: 300px; max-width: 90vw; text-align: center; }
+  .confirm-modal p { font-size: 14px; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.6; }
+  .confirm-btns { display: flex; gap: 8px; justify-content: center; }
   @media (max-width: 680px) { .sidebar { display: none; } .main { padding: 1rem 0.75rem; } }
 </style>
 </head>
@@ -108,6 +121,7 @@
   <div class="logo"><div class="logo-cross"></div>Worship<span>Link</span></div>
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="online-badge"><div class="online-dot"></div>リアルタイム共有中</div>
+    <div class="admin-badge" id="adminBadge" style="display:none;" onclick="openAdminPanel()">👑 管理者</div>
     <div class="avatar-sm" id="headerAvatar" onclick="openProfile()" title="プロフィール設定"></div>
   </div>
 </header>
@@ -177,9 +191,9 @@
 <div class="modal-overlay" id="profileModal">
   <div class="modal">
     <h3>プロフィール設定</h3>
-    <label>お名前</label>
-    <input id="pName" type="text" placeholder="例：田中めぐみ">
-    <label>所属教会・グループ（なければ空欄でOK）</label>
+    <label>お名前またはニックネーム</label>
+    <input id="pName" type="text" placeholder="例：田中めぐみ、めぐちゃん など">
+    <label>所属教会・グループ（記載なくてもOK）</label>
     <input id="pChurch" type="text" placeholder="例：大阪ホープチャーチ、ゴスペル合唱団など">
     <label>あなたはどんな参加者ですか？</label>
     <select id="pRole">
@@ -214,6 +228,49 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- 管理者パネル -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal" style="width:400px;">
+    <h3>👑 管理者パネル</h3>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:1rem;">管理者パスワードを変更・ブロックユーザーを管理できます。</div>
+    <div class="admin-panel">
+      <div class="admin-panel-title">🚫 ブロック中のユーザー</div>
+      <div class="blocked-list" id="blockedList">（なし）</div>
+    </div>
+    <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;">管理者パスワード変更</label>
+    <input id="newAdminPw" type="password" placeholder="新しいパスワード" style="width:100%;background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text);font-size:13px;outline:none;margin-bottom:12px;">
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeAdminPanel()">閉じる</button>
+      <button class="btn btn-primary" onclick="changeAdminPw()">パスワード変更</button>
+    </div>
+  </div>
+</div>
+
+<!-- 管理者ログインモーダル -->
+<div class="modal-overlay" id="adminLoginModal">
+  <div class="modal">
+    <h3>👑 管理者ログイン</h3>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:1rem;">管理者パスワードを入力してください。</div>
+    <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px;">パスワード</label>
+    <input id="adminPwInput" type="password" placeholder="管理者パスワード" style="width:100%;background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:8px 10px;color:var(--text);font-size:13px;outline:none;margin-bottom:12px;" onkeydown="if(event.key==='Enter')checkAdminLogin()">
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeAdminLogin()">キャンセル</button>
+      <button class="btn btn-primary" onclick="checkAdminLogin()">ログイン</button>
+    </div>
+  </div>
+</div>
+
+<!-- 確認ダイアログ -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="confirm-modal">
+    <p id="confirmMsg">本当に削除しますか？</p>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="closeConfirm()">キャンセル</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="">実行する</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <script>
@@ -227,6 +284,13 @@ let sessionId = localStorage.getItem('wl_session') || Math.random().toString(36)
 localStorage.setItem('wl_session', sessionId);
 let currentFilter = '';
 let likedPosts = JSON.parse(localStorage.getItem('wl_liked') || '[]');
+
+// ===== 管理者設定 =====
+const DEFAULT_ADMIN_PW = 'worship2025admin'; // 初期パスワード
+let isAdmin = localStorage.getItem('wl_admin') === 'true';
+let adminPw = localStorage.getItem('wl_admin_pw') || DEFAULT_ADMIN_PW;
+let blockedUsers = JSON.parse(localStorage.getItem('wl_blocked') || '[]');
+let confirmCallback = null;
 
 function getColor(name){ return COLORS[(name||'?').charCodeAt(0) % COLORS.length]; }
 function getInitials(name){ return (name||'?').charAt(0); }
@@ -245,6 +309,7 @@ function initProfile(){
   renderAvatar(document.getElementById('headerAvatar'), profile.name);
   renderAvatar(document.getElementById('composerAvatar'), profile.name);
   if(!profile.name) setTimeout(openProfile, 500);
+  document.getElementById('adminBadge').style.display = isAdmin ? 'inline-flex' : 'none';
 }
 
 function openProfile(){
@@ -325,6 +390,103 @@ async function submitComment(postId){
   setTimeout(()=>{ const el = document.getElementById('comments-'+postId); if(el) el.classList.add('open'); }, 300);
 }
 
+// ===== 管理者機能 =====
+function openAdminLogin(){
+  document.getElementById('adminPwInput').value = '';
+  document.getElementById('adminLoginModal').classList.add('open');
+  setTimeout(()=>document.getElementById('adminPwInput').focus(), 100);
+}
+function closeAdminLogin(){ document.getElementById('adminLoginModal').classList.remove('open'); }
+function checkAdminLogin(){
+  const pw = document.getElementById('adminPwInput').value;
+  if(pw === adminPw){
+    isAdmin = true;
+    localStorage.setItem('wl_admin', 'true');
+    closeAdminLogin();
+    initProfile();
+    showToast('👑 管理者としてログインしました');
+    loadPosts();
+  } else {
+    showToast('パスワードが違います');
+  }
+}
+function openAdminPanel(){
+  renderBlockedList();
+  document.getElementById('adminModal').classList.add('open');
+}
+function closeAdminPanel(){ document.getElementById('adminModal').classList.remove('open'); }
+function changeAdminPw(){
+  const newPw = document.getElementById('newAdminPw').value.trim();
+  if(!newPw){ showToast('パスワードを入力してください'); return; }
+  adminPw = newPw;
+  localStorage.setItem('wl_admin_pw', newPw);
+  document.getElementById('newAdminPw').value = '';
+  showToast('パスワードを変更しました');
+}
+function renderBlockedList(){
+  const el = document.getElementById('blockedList');
+  if(!blockedUsers.length){ el.innerHTML = '（なし）'; return; }
+  el.innerHTML = blockedUsers.map(u=>`
+    <div class="blocked-user-item">
+      <span>${esc(u)}</span>
+      <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="unblockUser('${esc(u)}')">解除</button>
+    </div>`).join('');
+}
+function unblockUser(name){
+  blockedUsers = blockedUsers.filter(u=>u!==name);
+  localStorage.setItem('wl_blocked', JSON.stringify(blockedUsers));
+  renderBlockedList();
+  loadPosts();
+  showToast(`${name} のブロックを解除しました`);
+}
+
+// ===== 削除・ブロック =====
+function showConfirm(msg, callback){
+  document.getElementById('confirmMsg').textContent = msg;
+  confirmCallback = callback;
+  document.getElementById('confirmModal').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirmModal').classList.remove('open'); confirmCallback = null; }
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('confirmOkBtn').onclick = ()=>{ if(confirmCallback) confirmCallback(); closeConfirm(); };
+});
+
+async function deletePost(postId){
+  showConfirm('この投稿を削除しますか？', async ()=>{
+    await sb.from('comments').delete().eq('post_id', postId);
+    await sb.from('posts').delete().eq('id', postId);
+    showToast('投稿を削除しました');
+    loadPosts();
+  });
+}
+async function deleteComment(commentId){
+  showConfirm('このコメントを削除しますか？', async ()=>{
+    await sb.from('comments').delete().eq('id', commentId);
+    showToast('コメントを削除しました');
+    loadPosts();
+  });
+}
+function blockUser(name){
+  showConfirm(`「${name}」をブロックしますか？\nブロックすると投稿・コメントが非表示になります。`, ()=>{
+    if(!blockedUsers.includes(name)){
+      blockedUsers.push(name);
+      localStorage.setItem('wl_blocked', JSON.stringify(blockedUsers));
+    }
+    showToast(`${name} をブロックしました`);
+    loadPosts();
+  });
+}
+
+// 管理者ログイン：ロゴを5回タップで起動
+let logoTapCount = 0, logoTapTimer;
+document.querySelector('.logo').addEventListener('click', ()=>{
+  if(isAdmin) return;
+  logoTapCount++;
+  clearTimeout(logoTapTimer);
+  logoTapTimer = setTimeout(()=>logoTapCount=0, 2000);
+  if(logoTapCount >= 5){ logoTapCount=0; openAdminLogin(); }
+});
+
 function filterTag(tag){
   currentFilter = tag;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -334,20 +496,24 @@ function filterTag(tag){
 
 function renderFeed(posts){
   const list = document.getElementById('feedList');
-  if(!posts.length){
+  // ブロックユーザーの投稿を除外
+  const visible = posts.filter(p => !blockedUsers.includes(p.name));
+  if(!visible.length){
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">🕊️</div>まだ投稿がありません。<br>最初の一歩を踏み出してみてください。</div>';
     return;
   }
-  list.innerHTML = posts.map(p => {
+  list.innerHTML = visible.map(p => {
     const isLiked = likedPosts.includes(p.id);
     const color = getColor(p.name);
-    const comments = p.comments || [];
+    const comments = (p.comments || []).filter(c => !blockedUsers.includes(c.name));
     const timeStr = new Date(p.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const isMyPost = profile.name && p.name === profile.name;
+    const canDelete = isMyPost || isAdmin;
     return `<div class="post-card">
       <div class="post-header">
         <div class="avatar-sm" style="background:${color}28;border:1.5px solid ${color}60;color:${color};font-size:13px;font-weight:700;">${esc(getInitials(p.name))}</div>
         <div class="post-meta">
-          <div class="post-name">${esc(p.name)}</div>
+          <div class="post-name">${esc(p.name)}${isMyPost?'<span style="font-size:10px;color:var(--text3);margin-left:6px;">（自分）</span>':''}</div>
           <div class="post-info">${esc(p.church||'')}${p.church&&p.role?' · ':''}${esc(p.role||'')} · ${timeStr}</div>
         </div>
         <span class="post-tag">${esc(p.tag)}</span>
@@ -362,11 +528,18 @@ function renderFeed(posts){
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           ${comments.length} コメント
         </button>
+        ${canDelete ? `<button class="btn btn-danger action-btn" onclick="deletePost(${p.id})">🗑 削除</button>` : ''}
+        ${isAdmin && !isMyPost ? `<button class="btn btn-block action-btn" onclick="blockUser('${esc(p.name)}')">🚫 ブロック</button>` : ''}
       </div>
       <div class="comments-section" id="comments-${p.id}">
         ${comments.map(c=>`<div class="comment-item">
           <div class="avatar-sm" style="background:${getColor(c.name)}28;border:1.5px solid ${getColor(c.name)}60;color:${getColor(c.name)};font-size:11px;font-weight:700;width:28px;height:28px;flex-shrink:0;">${esc(getInitials(c.name))}</div>
-          <div class="comment-body"><div class="comment-name">${esc(c.name)}</div><div class="comment-text">${esc(c.text)}</div></div>
+          <div class="comment-body">
+            <div class="comment-name">${esc(c.name)}</div>
+            <div class="comment-text">${esc(c.text)}</div>
+          </div>
+          ${(isAdmin || (profile.name && c.name === profile.name)) ? `<button class="btn btn-danger" style="align-self:center;margin-left:8px;" onclick="deleteComment(${c.id})">🗑</button>` : ''}
+          ${isAdmin && profile.name !== c.name ? `<button class="btn btn-block" style="align-self:center;margin-left:4px;" onclick="blockUser('${esc(c.name)}')">🚫</button>` : ''}
         </div>`).join('')}
         <div class="comment-composer">
           <div class="avatar-sm" style="background:${getColor(profile.name||'?')}28;border:1.5px solid ${getColor(profile.name||'?')}60;color:${getColor(profile.name||'?')};font-size:11px;font-weight:700;width:28px;height:28px;flex-shrink:0;">${esc(getInitials(profile.name||'?'))}</div>
