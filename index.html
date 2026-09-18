@@ -267,7 +267,7 @@
     <p id="confirmMsg">本当に削除しますか？</p>
     <div class="confirm-btns">
       <button class="btn btn-ghost" onclick="closeConfirm()">キャンセル</button>
-      <button class="btn btn-danger" id="confirmOkBtn" onclick="">実行する</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="execConfirm()">実行する</button>
     </div>
   </div>
 </div>
@@ -417,11 +417,13 @@ function openAdminPanel(){
 function closeAdminPanel(){ document.getElementById('adminModal').classList.remove('open'); }
 function changeAdminPw(){
   const newPw = document.getElementById('newAdminPw').value.trim();
-  if(!newPw){ showToast('パスワードを入力してください'); return; }
+  if(!newPw){ showToast('新しいパスワードを入力してください'); return; }
+  if(newPw.length < 6){ showToast('パスワードは6文字以上にしてください'); return; }
   adminPw = newPw;
   localStorage.setItem('wl_admin_pw', newPw);
   document.getElementById('newAdminPw').value = '';
-  showToast('パスワードを変更しました');
+  closeAdminPanel();
+  showToast('✅ パスワードを変更しました。次回からは新しいパスワードでログインしてください。');
 }
 function renderBlockedList(){
   const el = document.getElementById('blockedList');
@@ -447,9 +449,7 @@ function showConfirm(msg, callback){
   document.getElementById('confirmModal').classList.add('open');
 }
 function closeConfirm(){ document.getElementById('confirmModal').classList.remove('open'); confirmCallback = null; }
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('confirmOkBtn').onclick = ()=>{ if(confirmCallback) confirmCallback(); closeConfirm(); };
-});
+function execConfirm(){ if(confirmCallback){ confirmCallback(); } closeConfirm(); }
 
 async function deletePost(postId){
   showConfirm('この投稿を削除しますか？', async ()=>{
