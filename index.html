@@ -174,7 +174,6 @@
 
 <!-- コミュニティタブ -->
 <div class="tab-page active" id="page-community">
-<div class="main">
   <aside class="sidebar">
     <div class="sidebar-card">
       <div class="sidebar-title">メニュー</div>
@@ -234,7 +233,7 @@
     </div>
     <div id="feedList"><div class="loading-bar">🕊️ 投稿を読み込み中…</div></div>
   </main>
-</div><!-- /.main -->
+</div>
 </div><!-- /page-community -->
 
 <!-- ライブ・チケットタブ -->
@@ -413,7 +412,6 @@ function switchTab(tab){
   document.getElementById('page-' + tab).classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
   if(tab === 'live') renderEvents();
-  if(tab === 'community') loadPosts();
 }
 
 // ===== イベントデータ =====
@@ -563,7 +561,8 @@ function submitApply(){
     `当日会場でお会いできることを楽しみにしています🙏`;
 }
 
-// Tab & Apply modal close on overlay click handled at bottom init
+// ===== Tab & Apply modal close on overlay click =====
+document.getElementById('applyModal')?.addEventListener('click', function(e){ if(e.target===this) closeApply(); });
 function getInitials(name){ return (name||'?').charAt(0); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -869,12 +868,8 @@ function subscribeRealtime(){
 }
 
 document.getElementById('profileModal').addEventListener('click', function(e){ if(e.target===this) closeProfile(); });
-document.getElementById('applyModal').addEventListener('click', function(e){ if(e.target===this) closeApply(); });
-document.getElementById('adminModal').addEventListener('click', function(e){ if(e.target===this) closeAdminPanel(); });
-document.getElementById('adminLoginModal').addEventListener('click', function(e){ if(e.target===this) closeAdminLogin(); });
 initProfile();
 loadPosts();
-renderEvents();
 subscribeRealtime();
 </script>
 </body>
