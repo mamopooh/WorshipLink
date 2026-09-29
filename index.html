@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WorshipLink — コミュニティ</title>
+<title>WorshipLink</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Lato:wght@400;700&display=swap');
@@ -113,6 +113,47 @@
   .confirm-modal p { font-size: 14px; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.6; }
   .confirm-btns { display: flex; gap: 8px; justify-content: center; }
   @media (max-width: 680px) { .sidebar { display: none; } .main { padding: 1rem 0.75rem; } }
+
+  /* ===== タブナビ ===== */
+  .tab-nav { display: flex; border-bottom: 0.5px solid var(--border2); background: rgba(11,15,26,0.95); padding: 0 1.5rem; }
+  .tab-btn { padding: 12px 20px; font-size: 14px; font-weight: 500; color: var(--text3); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -0.5px; transition: color 0.15s, border-color 0.15s; display: flex; align-items: center; gap: 6px; }
+  .tab-btn:hover { color: var(--text2); }
+  .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent); }
+  .tab-page { display: none; }
+  .tab-page.active { display: flex; }
+
+  /* ===== ライブページ ===== */
+  .live-feed { flex: 1; min-width: 0; }
+  .event-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; transition: border-color 0.2s; }
+  .event-card:hover { border-color: var(--border2); }
+  .event-hero { background: linear-gradient(135deg, #1a0f2e 0%, #0d1b3e 100%); padding: 1.5rem; position: relative; }
+  .event-hero-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .event-hero-meta { font-size: 13px; color: #a0a8c8; display: flex; flex-wrap: wrap; gap: 12px; }
+  .event-hero-meta span { display: flex; align-items: center; gap: 4px; }
+  .event-status { position: absolute; top: 1rem; right: 1rem; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .status-open { background: rgba(80,200,150,0.15); color: var(--green); border: 0.5px solid rgba(80,200,150,0.3); }
+  .status-few { background: rgba(240,192,96,0.15); color: #f0c060; border: 0.5px solid rgba(240,192,96,0.3); }
+  .status-free { background: rgba(124,108,248,0.15); color: var(--accent2); border: 0.5px solid var(--accent-border); }
+  .event-body { padding: 1.25rem; }
+  .event-desc { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 1rem; }
+  .ticket-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+  .ticket-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; }
+  .ticket-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .ticket-price { font-size: 14px; color: var(--accent2); font-weight: 700; }
+  .btn-apply { background: var(--accent); color: #fff; width: 100%; padding: 11px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; margin-top: 4px; }
+  .btn-apply:hover { opacity: 0.85; }
+
+  /* 申込フォームモーダル */
+  .apply-modal { background: var(--surface); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 1.5rem; width: 400px; max-width: 92vw; }
+  .apply-modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .apply-modal .event-name-sub { font-size: 12px; color: var(--accent2); margin-bottom: 1rem; }
+  .apply-modal label { font-size: 12px; color: var(--text3); display: block; margin-bottom: 4px; }
+  .apply-modal input, .apply-modal select { width: 100%; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 9px 11px; color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; outline: none; margin-bottom: 12px; }
+  .apply-modal input:focus, .apply-modal select:focus { border-color: var(--accent-border); }
+  .apply-success { text-align: center; padding: 1rem 0; }
+  .apply-success .check { font-size: 40px; margin-bottom: 12px; }
+  .apply-success h4 { font-size: 16px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+  .apply-success p { font-size: 13px; color: var(--text2); line-height: 1.7; }
 </style>
 </head>
 <body>
@@ -125,7 +166,14 @@
     <div class="avatar-sm" id="headerAvatar" onclick="openProfile()" title="プロフィール設定"></div>
   </div>
 </header>
-<div class="main">
+<!-- タブナビ -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('community')" id="tab-community">🏠 コミュニティ</button>
+  <button class="tab-btn" onclick="switchTab('live')" id="tab-live">🎵 ライブ・チケット</button>
+</nav>
+
+<!-- コミュニティタブ -->
+<div class="tab-page active" id="page-community">
   <aside class="sidebar">
     <div class="sidebar-card">
       <div class="sidebar-title">メニュー</div>
@@ -185,6 +233,71 @@
     </div>
     <div id="feedList"><div class="loading-bar">🕊️ 投稿を読み込み中…</div></div>
   </main>
+</div>
+</div><!-- /page-community -->
+
+<!-- ライブ・チケットタブ -->
+<div class="tab-page" id="page-live">
+  <div class="main">
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-title">絞り込み</div>
+        <div class="nav-item active" onclick="filterEvents('')"><span class="nav-icon">🎵</span> すべて</div>
+        <div class="nav-item" onclick="filterEvents('無料')"><span class="nav-icon">🎁</span> 無料イベント</div>
+        <div class="nav-item" onclick="filterEvents('有料')"><span class="nav-icon">🎟</span> チケットあり</div>
+        <div class="nav-item" onclick="filterEvents('オンライン')"><span class="nav-icon">💻</span> オンライン</div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">地域</div>
+        <div class="tag-list">
+          <span class="tag" onclick="filterEvents('東京')">東京</span>
+          <span class="tag" onclick="filterEvents('大阪')">大阪</span>
+          <span class="tag" onclick="filterEvents('名古屋')">名古屋</span>
+          <span class="tag" onclick="filterEvents('福岡')">福岡</span>
+          <span class="tag" onclick="filterEvents('全国')">全国</span>
+        </div>
+      </div>
+    </aside>
+    <main class="live-feed" id="liveList">
+      <!-- イベントはJSで描画 -->
+    </main>
+  </div>
+</div><!-- /page-live -->
+
+<!-- チケット申込モーダル -->
+<div class="modal-overlay" id="applyModal">
+  <div class="apply-modal" id="applyModalInner">
+    <div id="applyForm">
+      <h3>🎟 チケット申込</h3>
+      <div class="event-name-sub" id="applyEventName"></div>
+      <label>お名前またはニックネーム</label>
+      <input id="applyName" type="text" placeholder="例：田中めぐみ">
+      <label>メールアドレス</label>
+      <input id="applyEmail" type="email" placeholder="例：example@email.com">
+      <label>チケット種別</label>
+      <select id="applyTicket"></select>
+      <label>枚数</label>
+      <select id="applyCount">
+        <option value="1">1枚</option>
+        <option value="2">2枚</option>
+        <option value="3">3枚</option>
+        <option value="4">4枚</option>
+        <option value="5">5枚</option>
+      </select>
+      <label>備考・メッセージ（任意）</label>
+      <input id="applyNote" type="text" placeholder="例：車椅子席希望、友人と一緒に参加など">
+      <div class="modal-btns" style="margin-top:0;">
+        <button class="btn btn-ghost" onclick="closeApply()">キャンセル</button>
+        <button class="btn btn-primary" onclick="submitApply()">申込する</button>
+      </div>
+    </div>
+    <div id="applySuccess" class="apply-success" style="display:none;">
+      <div class="check">✅</div>
+      <h4>申込が完了しました！</h4>
+      <p id="applySuccessMsg"></p>
+      <button class="btn btn-primary" style="margin-top:1rem;" onclick="closeApply()">閉じる</button>
+    </div>
+  </div>
 </div>
 
 <!-- Profile Modal -->
@@ -292,7 +405,164 @@ let adminPw = localStorage.getItem('wl_admin_pw') || DEFAULT_ADMIN_PW;
 let blockedUsers = JSON.parse(localStorage.getItem('wl_blocked') || '[]');
 let confirmCallback = null;
 
-function getColor(name){ return COLORS[(name||'?').charCodeAt(0) % COLORS.length]; }
+// ===== タブ切り替え =====
+function switchTab(tab){
+  document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if(tab === 'live') renderEvents();
+}
+
+// ===== イベントデータ =====
+const EVENTS = [
+  {
+    id: 1,
+    title: 'Spring Worship Night 2025',
+    date: '2025年6月8日（日）18:00〜21:00',
+    place: '東京・恵比寿 Trinity Hall',
+    area: '東京',
+    type: '有料',
+    status: 'open',
+    statusLabel: '受付中',
+    desc: '春の夜に捧げるワーシップコンサート。全国から集まったワーシッパーたちによる賛美の時間です。どなたでもご参加いただけます。',
+    tickets: [
+      { name: '一般席', price: '¥3,000' },
+      { name: '前方指定席', price: '¥5,000' },
+      { name: 'ペアチケット（2名）', price: '¥5,500' },
+    ]
+  },
+  {
+    id: 2,
+    title: '賛美礼拝 オープン集会',
+    date: '2025年6月15日（日）14:00〜16:00',
+    place: '大阪・難波グレースチャーチ',
+    area: '大阪',
+    type: '無料',
+    status: 'free',
+    statusLabel: '無料',
+    desc: 'どなたでも参加できるオープンな賛美礼拝です。クリスチャンでない方も大歓迎。一緒に音楽と祈りの時間を過ごしましょう。',
+    tickets: [
+      { name: '参加無料（事前申込推奨）', price: '無料' },
+    ]
+  },
+  {
+    id: 3,
+    title: 'ワーシップ・サマーキャンプ 2025',
+    date: '2025年7月12日（土）〜14日（月）',
+    place: '長野・軽井沢（宿泊あり）',
+    area: '全国',
+    type: '有料',
+    status: 'few',
+    statusLabel: '残席わずか',
+    desc: '2泊3日のワーシップキャンプ。賛美・礼拝・祈り・交わりを深める特別な時間。演奏経験がなくても参加OK。交通費・宿泊費含む。',
+    tickets: [
+      { name: '一般参加（2泊3日・食事付）', price: '¥35,000' },
+      { name: '学生割引', price: '¥25,000' },
+    ]
+  },
+  {
+    id: 4,
+    title: 'オンライン賛美会 〜世界とつながる礼拝〜',
+    date: '2025年6月22日（日）20:00〜21:30',
+    place: 'オンライン（Zoom）',
+    area: 'オンライン',
+    type: '無料',
+    status: 'free',
+    statusLabel: '無料',
+    desc: '全国・世界中からZoomでつながる賛美の時間。自宅から参加できます。URLは申込後にメールでお送りします。',
+    tickets: [
+      { name: 'オンライン参加（無料）', price: '無料' },
+    ]
+  },
+];
+
+let currentEventFilter = '';
+let currentApplyEvent = null;
+
+function filterEvents(keyword){
+  currentEventFilter = keyword;
+  document.querySelectorAll('#page-live .nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('#page-live .tag').forEach(el => el.classList.toggle('active', el.textContent.trim() === keyword));
+  renderEvents();
+}
+
+function renderEvents(){
+  const list = document.getElementById('liveList');
+  const filtered = currentEventFilter
+    ? EVENTS.filter(e => e.area === currentEventFilter || e.type === currentEventFilter)
+    : EVENTS;
+  if(!filtered.length){
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🎵</div>該当するイベントがありません。</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(e => `
+    <div class="event-card">
+      <div class="event-hero">
+        <span class="event-status status-${e.status}">${esc(e.statusLabel)}</span>
+        <div class="event-hero-title">${esc(e.title)}</div>
+        <div class="event-hero-meta">
+          <span>📅 ${esc(e.date)}</span>
+          <span>📍 ${esc(e.place)}</span>
+        </div>
+      </div>
+      <div class="event-body">
+        <div class="event-desc">${esc(e.desc)}</div>
+        <div class="ticket-list">
+          ${e.tickets.map(t => `
+            <div class="ticket-row">
+              <span class="ticket-name">${esc(t.name)}</span>
+              <span class="ticket-price">${esc(t.price)}</span>
+            </div>`).join('')}
+        </div>
+        <button class="btn-apply" onclick="openApply(${e.id})">🎟 このイベントに申し込む</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openApply(eventId){
+  currentApplyEvent = EVENTS.find(e => e.id === eventId);
+  if(!currentApplyEvent) return;
+  document.getElementById('applyEventName').textContent = currentApplyEvent.title;
+  // プロフィールから自動入力
+  document.getElementById('applyName').value = profile.name || '';
+  document.getElementById('applyEmail').value = '';
+  document.getElementById('applyNote').value = '';
+  // チケット種別セット
+  const sel = document.getElementById('applyTicket');
+  sel.innerHTML = currentApplyEvent.tickets.map(t =>
+    `<option value="${esc(t.name)}">${esc(t.name)}　${esc(t.price)}</option>`
+  ).join('');
+  // フォームを表示
+  document.getElementById('applyForm').style.display = 'block';
+  document.getElementById('applySuccess').style.display = 'none';
+  document.getElementById('applyModal').classList.add('open');
+}
+function closeApply(){
+  document.getElementById('applyModal').classList.remove('open');
+  currentApplyEvent = null;
+}
+function submitApply(){
+  const name = document.getElementById('applyName').value.trim();
+  const email = document.getElementById('applyEmail').value.trim();
+  if(!name){ showToast('お名前を入力してください'); return; }
+  if(!email || !email.includes('@')){ showToast('正しいメールアドレスを入力してください'); return; }
+  const ticket = document.getElementById('applyTicket').value;
+  const count = document.getElementById('applyCount').value;
+  // 申込完了表示
+  document.getElementById('applyForm').style.display = 'none';
+  document.getElementById('applySuccess').style.display = 'block';
+  document.getElementById('applySuccessMsg').innerHTML =
+    `<strong>${esc(name)}</strong> 様<br><br>` +
+    `イベント：${esc(currentApplyEvent.title)}<br>` +
+    `チケット：${esc(ticket)} × ${count}枚<br><br>` +
+    `確認メールを <strong>${esc(email)}</strong> に送信しました。<br>` +
+    `当日会場でお会いできることを楽しみにしています🙏`;
+}
+
+// ===== Tab & Apply modal close on overlay click =====
+document.getElementById('applyModal')?.addEventListener('click', function(e){ if(e.target===this) closeApply(); });
 function getInitials(name){ return (name||'?').charAt(0); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
