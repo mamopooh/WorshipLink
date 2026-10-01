@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorshipLink</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Lato:wght@400;700;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f0faf4; --surface: #ffffff; --surface2: #e8f5ee;
+    --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+    --text: #1a2e1a; --text2: #4a6650; --text3: #7a9a80;
+    --accent: #6c4ff8; --accent2: #5a3ee0;
+    --green: #2a9a5a;
+  }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ヘッダー */
+  header { padding: 1.25rem 2rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border2); background: var(--surface); }
+  .logo { font-family: 'Lato', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .logo-cross { width: 24px; height: 24px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .logo-cross::before, .logo-cross::after { content: ''; position: absolute; background: var(--accent); border-radius: 2px; }
+  .logo-cross::before { width: 4px; height: 24px; }
+  .logo-cross::after { width: 24px; height: 4px; }
+  .logo span { color: var(--accent2); }
+
+  /* ヒーロー */
+  .hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem 2rem; text-align: center; position: relative; overflow: hidden; }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(108,79,248,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  /* 大きな十字装飾 */
+  .hero-cross {
+    position: relative; width: 80px; height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 2rem;
+  }
+  .hero-cross::before, .hero-cross::after { content: ''; position: absolute; background: var(--accent); border-radius: 6px; }
+  .hero-cross::before { width: 18px; height: 80px; }
+  .hero-cross::after { width: 80px; height: 18px; }
+  .hero-cross-glow {
+    position: absolute; inset: -20px;
+    background: radial-gradient(circle, rgba(108,79,248,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: glow 3s ease-in-out infinite;
+  }
+  @keyframes glow { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+  .hero-title { font-family: 'Lato', sans-serif; font-size: clamp(32px, 8vw, 52px); font-weight: 900; color: var(--text); margin-bottom: 6px; position: relative; }
+  .hero-title span { color: var(--accent2); }
+  .hero-sub { font-size: clamp(13px, 3vw, 16px); color: var(--text2); margin-bottom: 0.5rem; position: relative; }
+  .hero-tagline { font-size: clamp(11px, 2.5vw, 13px); color: var(--text3); margin-bottom: 3rem; position: relative; }
+
+  /* カード */
+  .cards { display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap; position: relative; width: 100%; max-width: 720px; }
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border2);
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    width: 300px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(108,79,248,0.12); }
+  .card-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+  }
+  .card-title { font-size: 20px; font-weight: 700; color: var(--text); }
+  .card-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .card-features { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .card-feature { font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+  .card-feature::before { content: '✓'; color: var(--accent2); font-weight: 700; }
+  .card-arrow {
+    margin-top: auto; align-self: flex-end;
+    font-size: 13px; font-weight: 600; color: var(--accent2);
+    display: flex; align-items: center; gap: 4px;
+    padding-top: 1rem;
+  }
+  .card-bg {
+    position: absolute; bottom: -20px; right: -20px;
+    font-size: 80px; opacity: 0.05; pointer-events: none;
+  }
+
+  /* フッター */
+  footer { text-align: center; padding: 1.5rem; font-size: 12px; color: var(--text3); border-top: 1px solid var(--border2); background: var(--surface); }
+
+  @media (max-width: 660px) {
+    .cards { flex-direction: column; align-items: center; }
+    .card { width: 100%; max-width: 360px; }
+    header { padding: 1rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-cross"></div>
+    Worship<span>Link</span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-cross"><div class="hero-cross-glow"></div></div>
+  <h1 class="hero-title">Worship<span>Link</span></h1>
+  <p class="hero-sub">ワーシップ・コミュニティアプリ</p>
+  <p class="hero-tagline">クリスチャンも、一般の方も、誰でも参加できます</p>
+
+  <div class="cards">
+    <!-- コミュニティ -->
+    <a href="community.html" class="card">
+      <div class="card-icon" style="background:rgba(124,108,248,0.15);">🤝</div>
+      <div class="card-title">コミュニティ</div>
+      <div class="card-desc">全国の仲間と投稿・コメント・いいねで交流できる掲示板です。</div>
+      <div class="card-features">
+        <div class="card-feature">今日の恵み・祈りを分かち合う</div>
+        <div class="card-feature">全国の兄弟姉妹とつながる</div>
+        <div class="card-feature">AI応援メッセージ機能あり</div>
+        <div class="card-feature">リアルタイムで更新される</div>
+      </div>
+      <div class="card-arrow">コミュニティへ →</div>
+      <div class="card-bg">🤝</div>
+    </a>
+
+    <!-- ライブ・チケット -->
+    <a href="live.html" class="card">
+      <div class="card-icon" style="background:rgba(80,200,150,0.12);">🎵</div>
+      <div class="card-title">ライブ・チケット</div>
+      <div class="card-desc">全国のワーシップイベント情報を確認して、参加申込ができます。</div>
+      <div class="card-features">
+        <div class="card-feature">全国のイベントを検索・絞り込み</div>
+        <div class="card-feature">参加申込フォーム（無料）</div>
+        <div class="card-feature">オンラインイベントも対応</div>
+        <div class="card-feature">地域別・テーマ別で探せる</div>
+      </div>
+      <div class="card-arrow">イベントを見る →</div>
+      <div class="card-bg">🎵</div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  🕊️ WorshipLink — 信仰の有無に関わらず、どなたでも歓迎します。無料でご利用いただけます。
+</footer>
+
+</body>
+</html>

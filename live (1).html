@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorshipLink — ライブ・チケット</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Lato:wght@400;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f0faf4; --surface: #ffffff; --surface2: #e8f5ee;
+    --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+    --text: #1a2e1a; --text2: #4a6650; --text3: #7a9a80;
+    --accent: #6c4ff8; --accent2: #5a3ee0;
+    --accent-bg: rgba(108,79,248,0.08); --accent-border: rgba(108,79,248,0.25);
+    --green: #2a9a5a; --green-bg: rgba(42,154,90,0.10);
+    --radius: 14px; --radius-sm: 8px;
+  }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(240,250,244,0.95); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border2);
+    padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px;
+  }
+  .logo { font-family: 'Lato', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .logo-cross { width: 22px; height: 22px; position: relative; display: flex; align-items: center; justify-content: center; }
+  .logo-cross::before, .logo-cross::after { content: ''; position: absolute; background: var(--accent); border-radius: 2px; }
+  .logo-cross::before { width: 4px; height: 22px; }
+  .logo-cross::after { width: 22px; height: 4px; }
+  .logo span { color: var(--accent2); }
+  .back-btn { font-size: 12px; color: var(--text3); text-decoration: none; padding: 5px 10px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); }
+  .main { display: flex; max-width: 960px; margin: 0 auto; width: 100%; padding: 1.5rem 1rem; gap: 1.5rem; }
+  .sidebar { width: 220px; flex-shrink: 0; }
+  .sidebar-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+  .sidebar-title { font-size: 11px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 10px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text2); cursor: pointer; margin-bottom: 2px; transition: background 0.15s, color 0.15s; }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent2); }
+  .nav-icon { font-size: 16px; width: 18px; text-align: center; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--surface2); color: var(--text2); border: 0.5px solid var(--border); cursor: pointer; transition: background 0.15s; }
+  .tag:hover, .tag.active { background: var(--accent-bg); color: var(--accent2); border-color: var(--accent-border); }
+  .live-feed { flex: 1; min-width: 0; }
+  .event-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; transition: border-color 0.2s; }
+  .event-card:hover { border-color: var(--border2); }
+  .event-hero { background: linear-gradient(135deg, #3a2080 0%, #2a1a6e 100%); padding: 1.5rem; position: relative; }
+  .event-hero-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .event-hero-meta { font-size: 13px; color: #a0a8c8; display: flex; flex-direction: column; gap: 4px; }
+  .event-status { position: absolute; top: 1rem; right: 1rem; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .status-open { background: rgba(42,154,90,0.12); color: #1a7a40; border: 0.5px solid rgba(42,154,90,0.3); font-weight: 700; }
+  .status-few { background: rgba(180,100,0,0.10); color: #8a4a00; border: 0.5px solid rgba(180,100,0,0.3); font-weight: 700; }
+  .status-free { background: rgba(108,79,248,0.10); color: #5a3ee0; border: 0.5px solid rgba(108,79,248,0.3); font-weight: 700; }
+  .event-body { padding: 1.25rem; }
+  .event-desc { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 1rem; }
+  .free-badge { display: inline-block; background: rgba(42,154,90,0.10); color: #1a7a40; border: 1px solid rgba(42,154,90,0.3); border-radius: 20px; font-size: 12px; font-weight: 700; padding: 4px 14px; margin-bottom: 1rem; }
+  .btn-apply { background: var(--accent); color: #fff; width: 100%; padding: 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+  .btn-apply:hover { opacity: 0.85; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 14px; }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 20px; font-size: 13px; color: var(--text2); opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; z-index: 200; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* モーダル */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 1.5rem; width: 400px; max-width: 92vw; }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .modal-event-name { font-size: 12px; color: var(--accent2); margin-bottom: 1.25rem; }
+  .modal label { font-size: 12px; color: var(--text3); display: block; margin-bottom: 4px; }
+  .modal input, .modal select, .modal textarea { width: 100%; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 9px 11px; color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; outline: none; margin-bottom: 12px; }
+  .modal input:focus, .modal select:focus { border-color: var(--accent-border); }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .btn { padding: 7px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: opacity 0.15s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 0.5px solid var(--border2); }
+  /* 完了画面 */
+  .success-box { text-align: center; padding: 1rem 0; }
+  .success-icon { font-size: 48px; margin-bottom: 12px; }
+  .success-title { font-size: 18px; font-weight: 700; color: #1a7a40; margin-bottom: 10px; }
+  .success-msg { font-size: 13px; color: var(--text2); line-height: 1.8; }
+  @media (max-width: 680px) { .sidebar { display: none; } .main { padding: 1rem 0.75rem; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-cross"></div>Worship<span>Link</span></div>
+  <a href="index.html" class="back-btn">← トップへ</a>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">絞り込み</div>
+      <div class="nav-item active" onclick="filterEvents('', this)"><span class="nav-icon">🎵</span> すべて</div>
+      <div class="nav-item" onclick="filterEvents('東京', this)"><span class="nav-icon">🗼</span> 東京</div>
+      <div class="nav-item" onclick="filterEvents('大阪', this)"><span class="nav-icon">🏯</span> 大阪</div>
+      <div class="nav-item" onclick="filterEvents('名古屋', this)"><span class="nav-icon">🌸</span> 名古屋</div>
+      <div class="nav-item" onclick="filterEvents('福岡', this)"><span class="nav-icon">⛩</span> 福岡</div>
+      <div class="nav-item" onclick="filterEvents('オンライン', this)"><span class="nav-icon">💻</span> オンライン</div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">タグ</div>
+      <div class="tag-list">
+        <span class="tag" onclick="filterEvents('全国', null)">全国</span>
+        <span class="tag" onclick="filterEvents('賛美', null)">賛美</span>
+        <span class="tag" onclick="filterEvents('礼拝', null)">礼拝</span>
+        <span class="tag" onclick="filterEvents('キャンプ', null)">キャンプ</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="live-feed" id="liveList"></main>
+</div>
+
+<!-- 申込モーダル -->
+<div class="modal-overlay" id="applyModal">
+  <div class="modal">
+    <div id="applyForm">
+      <h3>🎟 参加申込</h3>
+      <div class="modal-event-name" id="applyEventName"></div>
+      <label>お名前またはニックネーム</label>
+      <input id="applyName" type="text" placeholder="例：田中めぐみ">
+      <label>メールアドレス</label>
+      <input id="applyEmail" type="email" placeholder="例：example@email.com">
+      <label>参加人数</label>
+      <select id="applyCount">
+        <option value="1">1名</option>
+        <option value="2">2名</option>
+        <option value="3">3名</option>
+        <option value="4">4名</option>
+        <option value="5">5名</option>
+      </select>
+      <label>備考・メッセージ（任意）</label>
+      <input id="applyNote" type="text" placeholder="例：初めて参加します、など">
+      <div class="modal-btns">
+        <button class="btn btn-ghost" onclick="closeApply()">キャンセル</button>
+        <button class="btn btn-primary" onclick="submitApply()">申込する</button>
+      </div>
+    </div>
+    <div id="applySuccess" class="success-box" style="display:none;">
+      <div class="success-icon">✅</div>
+      <div class="success-title">申込が完了しました！</div>
+      <div class="success-msg" id="applySuccessMsg"></div>
+      <button class="btn btn-primary" style="margin-top:1.25rem;" onclick="closeApply()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const EVENTS = [
+  {
+    id: 1,
+    title: 'Spring Worship Night 2025',
+    date: '2025年6月8日（日）18:00〜21:00',
+    place: '東京・恵比寿 Trinity Hall',
+    area: '東京',
+    tag: '賛美',
+    status: 'open', statusLabel: '受付中',
+    desc: '春の夜に捧げるワーシップコンサート。全国から集まったワーシッパーたちによる賛美の時間です。クリスチャンでない方も大歓迎です。'
+  },
+  {
+    id: 2,
+    title: '賛美礼拝 オープン集会',
+    date: '2025年6月15日（日）14:00〜16:00',
+    place: '大阪・難波グレースチャーチ',
+    area: '大阪',
+    tag: '礼拝',
+    status: 'free', statusLabel: '無料',
+    desc: 'どなたでも参加できるオープンな賛美礼拝です。信仰の有無に関わらずどなたでも歓迎します。一緒に音楽と祈りの時間を過ごしましょう。'
+  },
+  {
+    id: 3,
+    title: 'ワーシップ・サマーキャンプ 2025',
+    date: '2025年7月12日（土）〜14日（月）',
+    place: '長野・軽井沢（宿泊あり）',
+    area: '全国',
+    tag: 'キャンプ',
+    status: 'few', statusLabel: '残席わずか',
+    desc: '2泊3日のワーシップキャンプ。賛美・礼拝・祈り・交わりを深める特別な時間。演奏経験がなくても参加OK。交通費・宿泊費を含みます。'
+  },
+  {
+    id: 4,
+    title: 'オンライン賛美会 〜世界とつながる礼拝〜',
+    date: '2025年6月22日（日）20:00〜21:30',
+    place: 'オンライン（Zoom）',
+    area: 'オンライン',
+    tag: '賛美',
+    status: 'free', statusLabel: '無料',
+    desc: '全国・世界中からZoomでつながる賛美の時間。自宅から参加できます。参加URLは申込後にメールでお送りします。'
+  },
+  {
+    id: 5,
+    title: 'ワーシップ・ナイト in 名古屋',
+    date: '2025年7月5日（土）17:00〜20:00',
+    place: '名古屋・栄クリスチャンセンター',
+    area: '名古屋',
+    tag: '賛美',
+    status: 'open', statusLabel: '受付中',
+    desc: '名古屋初開催のワーシップナイト。地元の演奏者たちと共に賛美する特別な夜です。どなたでもお越しください。'
+  },
+  {
+    id: 6,
+    title: '福岡 ワーシップ＆プレイヤーミーティング',
+    date: '2025年7月20日（日）13:00〜17:00',
+    place: '福岡・博多シャロームチャーチ',
+    area: '福岡',
+    tag: '礼拝',
+    status: 'free', statusLabel: '無料',
+    desc: '賛美と祈りが一つになるミーティング。ワーシップの後に祈りの時間も設けます。信仰経験を問わずご参加いただけます。'
+  },
+];
+
+let currentFilter = '';
+let currentEvent = null;
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function filterEvents(keyword, el){
+  currentFilter = keyword;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderEvents();
+}
+
+function renderEvents(){
+  const list = document.getElementById('liveList');
+  const filtered = currentFilter
+    ? EVENTS.filter(e => e.area === currentFilter || e.tag === currentFilter)
+    : EVENTS;
+  if(!filtered.length){
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🎵</div>該当するイベントがありません。</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(e => `
+    <div class="event-card">
+      <div class="event-hero">
+        <span class="event-status status-${esc(e.status)}">${esc(e.statusLabel)}</span>
+        <div class="event-hero-title">${esc(e.title)}</div>
+        <div class="event-hero-meta">
+          <span>📅 ${esc(e.date)}</span>
+          <span>📍 ${esc(e.place)}</span>
+        </div>
+      </div>
+      <div class="event-body">
+        <div class="event-desc">${esc(e.desc)}</div>
+        <div class="free-badge">🎁 参加無料</div>
+        <button class="btn-apply" onclick="openApply(${e.id})">📝 このイベントに申し込む</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openApply(eventId){
+  currentEvent = EVENTS.find(e => e.id === eventId);
+  if(!currentEvent) return;
+  document.getElementById('applyEventName').textContent = currentEvent.title;
+  document.getElementById('applyName').value = '';
+  document.getElementById('applyEmail').value = '';
+  document.getElementById('applyNote').value = '';
+  document.getElementById('applyCount').value = '1';
+  document.getElementById('applyForm').style.display = 'block';
+  document.getElementById('applySuccess').style.display = 'none';
+  document.getElementById('applyModal').classList.add('open');
+}
+
+function closeApply(){
+  document.getElementById('applyModal').classList.remove('open');
+  currentEvent = null;
+}
+
+function submitApply(){
+  const name = document.getElementById('applyName').value.trim();
+  const email = document.getElementById('applyEmail').value.trim();
+  if(!name){ showToast('お名前を入力してください'); return; }
+  if(!email || !email.includes('@')){ showToast('正しいメールアドレスを入力してください'); return; }
+  const count = document.getElementById('applyCount').value;
+  const note = document.getElementById('applyNote').value.trim();
+  document.getElementById('applyForm').style.display = 'none';
+  document.getElementById('applySuccess').style.display = 'block';
+  document.getElementById('applySuccessMsg').innerHTML =
+    `<strong>${esc(name)}</strong> 様<br><br>` +
+    `イベント：${esc(currentEvent.title)}<br>` +
+    `参加人数：${count}名<br>` +
+    (note ? `備考：${esc(note)}<br>` : '') +
+    `<br>確認メールを <strong>${esc(email)}</strong> に送信しました。<br>当日お会いできることを楽しみにしています🙏`;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+document.getElementById('applyModal').addEventListener('click', function(e){ if(e.target===this) closeApply(); });
+renderEvents();
+</script>
+</body>
+</html>
