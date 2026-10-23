@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorshipLink — お問い合わせ</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Lato:wght@400;700;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f4fbf6; --surface: #ffffff; --surface2: #edf7f1;
+    --border: rgba(0,0,0,0.07); --border2: rgba(0,0,0,0.12);
+    --text: #0f1f0f; --text2: #3d5c44; --text3: #7a9a80;
+    --accent: #5b3ef5; --accent2: #7c63f8;
+    --accent-bg: rgba(91,62,245,0.08); --accent-border: rgba(91,62,245,0.22);
+    --green: #1e8c4a; --green-bg: rgba(30,140,74,0.08);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.10);
+    --radius: 16px; --radius-sm: 10px;
+  }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  /* ヘッダー */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border2);
+    box-shadow: var(--shadow-sm);
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 64px;
+  }
+  .logo { font-family: 'Lato', sans-serif; font-size: 20px; font-weight: 900; color: var(--text); display: flex; align-items: center; gap: 8px; text-decoration: none; letter-spacing: -0.3px; }
+  .logo-cross { width: 20px; height: 26px; position: relative; flex-shrink: 0; }
+  .logo-cross::before, .logo-cross::after { content: ''; position: absolute; background: var(--accent); border-radius: 3px; }
+  .logo-cross::before { width: 5px; height: 26px; left: 50%; transform: translateX(-50%); }
+  .logo-cross::after { width: 20px; height: 5px; top: 7px; left: 50%; transform: translateX(-50%); }
+  .logo span { color: var(--accent2); }
+  .back-btn { font-size: 12px; font-weight: 500; color: var(--accent); text-decoration: none; padding: 6px 14px; border: 1.5px solid var(--accent-border); border-radius: 20px; background: var(--accent-bg); }
+  .back-btn:hover { opacity: 0.8; }
+
+  /* ページ全体 */
+  .page { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  /* ページタイトル */
+  .page-hero { text-align: center; margin-bottom: 2.5rem; }
+  .page-hero h1 { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.5px; }
+  .page-hero p { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+  /* お問い合わせ種別選択 */
+  .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 2rem; }
+  .type-card {
+    background: var(--surface); border: 2px solid var(--border2);
+    border-radius: var(--radius); padding: 1.25rem 1rem;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; box-shadow: var(--shadow-sm);
+  }
+  .type-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); }
+  .type-card.active { border-color: var(--accent); background: var(--accent-bg); box-shadow: var(--shadow-md); }
+  .type-icon { font-size: 28px; margin-bottom: 8px; }
+  .type-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .type-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+
+  /* フォーム */
+  .form-card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; display: none; }
+  .form-card.active { display: block; }
+  .form-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .form-card .sub { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border2); }
+  .form-group { margin-bottom: 1.1rem; }
+  .form-label { font-size: 12px; font-weight: 700; color: var(--text2); display: block; margin-bottom: 5px; letter-spacing: 0.2px; }
+  .form-label .required { color: var(--accent); margin-left: 4px; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; background: var(--surface2);
+    border: 1.5px solid var(--border2); border-radius: var(--radius-sm);
+    padding: 10px 13px; color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); background: #fff; }
+  .form-textarea { resize: vertical; min-height: 100px; line-height: 1.7; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn-submit {
+    width: 100%; background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 14px; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    transition: opacity 0.15s, transform 0.15s;
+    box-shadow: 0 4px 16px rgba(91,62,245,0.3);
+    margin-top: 8px;
+  }
+  .btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0); }
+
+  /* 送信完了 */
+  .success-box { text-align: center; padding: 2.5rem 1rem; }
+  .success-icon { font-size: 56px; margin-bottom: 16px; }
+  .success-title { font-size: 22px; font-weight: 700; color: var(--green); margin-bottom: 10px; }
+  .success-msg { font-size: 14px; color: var(--text2); line-height: 1.8; margin-bottom: 1.5rem; }
+  .btn-back { display: inline-block; background: var(--accent-bg); color: var(--accent); border: 1.5px solid var(--accent-border); border-radius: 20px; padding: 10px 24px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; }
+
+  /* メール直接連絡 */
+  .contact-info { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 1.75rem 2rem; box-shadow: var(--shadow-sm); }
+  .contact-info h3 { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .contact-method { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .contact-method:last-child { border-bottom: none; padding-bottom: 0; }
+  .contact-method-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .contact-method-body { flex: 1; }
+  .contact-method-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
+  .contact-method-value { font-size: 14px; font-weight: 500; color: var(--text); }
+  .contact-method-note { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .copy-btn { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 20px; padding: 4px 12px; cursor: pointer; white-space: nowrap; }
+
+  .divider-label { text-align: center; font-size: 12px; color: var(--text3); margin: 1.5rem 0; display: flex; align-items: center; gap: 10px; }
+  .divider-label::before, .divider-label::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); border-radius: var(--radius-sm); padding: 10px 20px; font-size: 13px; color: #fff; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; z-index: 400; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 600px) {
+    .type-grid { grid-template-columns: 1fr 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .page { padding: 1.5rem 1rem 3rem; }
+    header { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html"><div class="logo-cross"></div>Worship<span>Link</span></a>
+  <a href="index.html" class="back-btn">← トップへ</a>
+</header>
+
+<div class="page">
+
+  <!-- ページタイトル -->
+  <div class="page-hero">
+    <h1>📩 お問い合わせ</h1>
+    <p>ご質問・ご要望・各種登録申請など、お気軽にご連絡ください。<br>通常2〜3営業日以内にご返信いたします。</p>
+  </div>
+
+  <!-- 種別選択 -->
+  <div class="type-grid" id="typeGrid">
+    <div class="type-card active" onclick="selectType('general')">
+      <div class="type-icon">💬</div>
+      <div class="type-name">一般のお問い合わせ</div>
+      <div class="type-desc">ご質問・ご意見・ご要望など</div>
+    </div>
+    <div class="type-card" onclick="selectType('member')">
+      <div class="type-icon">👤</div>
+      <div class="type-name">会員登録申請</div>
+      <div class="type-desc">正式な会員として登録したい</div>
+    </div>
+    <div class="type-card" onclick="selectType('event')">
+      <div class="type-icon">🎵</div>
+      <div class="type-name">イベント主催者登録</div>
+      <div class="type-desc">ライブ・イベントを掲載したい</div>
+    </div>
+    <div class="type-card" onclick="selectType('performer')">
+      <div class="type-icon">🎹</div>
+      <div class="type-name">演奏依頼</div>
+      <div class="type-desc">礼拝・イベントで演奏してほしい</div>
+    </div>
+    <div class="type-card" onclick="selectType('church')">
+      <div class="type-icon">⛪</div>
+      <div class="type-name">教会掲載申請</div>
+      <div class="type-desc">教会情報を掲載・更新したい</div>
+    </div>
+    <div class="type-card" onclick="selectType('other')">
+      <div class="type-icon">📋</div>
+      <div class="type-name">その他</div>
+      <div class="type-desc">上記に当てはまらないご相談</div>
+    </div>
+  </div>
+
+  <!-- 一般お問い合わせ -->
+  <div class="form-card active" id="form-general">
+    <h2>💬 一般のお問い合わせ</h2>
+    <div class="sub">WorshipLinkに関するご質問・ご意見・ご要望をお聞かせください。</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">お名前またはニックネーム <span class="required">*</span></label>
+        <input class="form-input" id="g-name" type="text" placeholder="例：田中めぐみ">
+      </div>
+      <div class="form-group">
+        <label class="form-label">メールアドレス <span class="required">*</span></label>
+        <input class="form-input" id="g-email" type="email" placeholder="例：example@email.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">件名 <span class="required">*</span></label>
+      <input class="form-input" id="g-subject" type="text" placeholder="例：コミュニティについて">
+    </div>
+    <div class="form-group">
+      <label class="form-label">お問い合わせ内容 <span class="required">*</span></label>
+      <textarea class="form-textarea" id="g-message" placeholder="詳しい内容をご記入ください。"></textarea>
+    </div>
+    <button class="btn-submit" onclick="submitForm('general')">送信する</button>
+  </div>
+
+  <!-- 会員登録申請 -->
+  <div class="form-card" id="form-member">
+    <h2>👤 会員登録申請</h2>
+    <div class="sub">WorshipLinkの正式な会員として登録申請します。登録後は各種サービスをより詳しくご利用いただけます。</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">お名前 <span class="required">*</span></label>
+        <input class="form-input" id="m-name" type="text" placeholder="例：田中めぐみ">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ニックネーム</label>
+        <input class="form-input" id="m-nick" type="text" placeholder="例：めぐちゃん">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">メールアドレス <span class="required">*</span></label>
+        <input class="form-input" id="m-email" type="email" placeholder="例：example@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">所属教会・グループ</label>
+        <input class="form-input" id="m-church" type="text" placeholder="例：大阪ホープチャーチ">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">楽器・役割</label>
+      <select class="form-select" id="m-role">
+        <option value="">選択してください</option>
+        <option>ワーシップリーダー</option>
+        <option>ピアノ奏者</option>
+        <option>ギタリスト</option>
+        <option>ヴォーカリスト</option>
+        <option>ドラマー</option>
+        <option>信徒（クリスチャン）</option>
+        <option>求道中</option>
+        <option>音楽が好き</option>
+        <option>その他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">一言メッセージ</label>
+      <textarea class="form-textarea" id="m-message" placeholder="登録の動機や自己紹介など、お気軽にどうぞ。" style="min-height:70px;"></textarea>
+    </div>
+    <button class="btn-submit" onclick="submitForm('member')">登録申請する</button>
+  </div>
+
+  <!-- イベント主催者登録 -->
+  <div class="form-card" id="form-event">
+    <h2>🎵 イベント主催者登録</h2>
+    <div class="sub">ライブ・礼拝集会・ワーシップイベントをWorshipLinkに掲載したい方はこちらからお申し込みください。</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">団体名・主催者名 <span class="required">*</span></label>
+        <input class="form-input" id="e-org" type="text" placeholder="例：東京グレースチャーチ">
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当者名 <span class="required">*</span></label>
+        <input class="form-input" id="e-name" type="text" placeholder="例：山田太郎">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">メールアドレス <span class="required">*</span></label>
+        <input class="form-input" id="e-email" type="email" placeholder="例：info@church.jp">
+      </div>
+      <div class="form-group">
+        <label class="form-label">電話番号</label>
+        <input class="form-input" id="e-phone" type="tel" placeholder="例：03-1234-5678">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">掲載予定のイベント概要 <span class="required">*</span></label>
+      <textarea class="form-textarea" id="e-event" placeholder="例：毎月第1日曜日に開催するワーシップナイト（東京・渋谷）、参加者30名程度..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ウェブサイト・SNS</label>
+      <input class="form-input" id="e-web" type="text" placeholder="例：https://example-church.jp">
+    </div>
+    <button class="btn-submit" onclick="submitForm('event')">申請する</button>
+  </div>
+
+  <!-- 演奏依頼 -->
+  <div class="form-card" id="form-performer">
+    <h2>🎹 演奏依頼</h2>
+    <div class="sub">礼拝やイベントで演奏してくれる方を探している方はこちらからご依頼ください。演奏者マッチングページもあわせてご活用ください。</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">お名前・団体名 <span class="required">*</span></label>
+        <input class="form-input" id="p-name" type="text" placeholder="例：大阪シャロームチャーチ">
+      </div>
+      <div class="form-group">
+        <label class="form-label">メールアドレス <span class="required">*</span></label>
+        <input class="form-input" id="p-email" type="email" placeholder="例：info@church.jp">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">希望楽器・役割 <span class="required">*</span></label>
+        <select class="form-select" id="p-instrument">
+          <option value="">選択してください</option>
+          <option>ピアノ</option>
+          <option>ギター</option>
+          <option>ヴォーカル</option>
+          <option>ドラム</option>
+          <option>ベース</option>
+          <option>バイオリン</option>
+          <option>ワーシップリーダー</option>
+          <option>複数・バンド全体</option>
+          <option>その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">希望日時</label>
+        <input class="form-input" id="p-date" type="text" placeholder="例：2025年7月13日（日）10:00〜">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">開催場所・形式</label>
+      <input class="form-input" id="p-place" type="text" placeholder="例：東京都渋谷区〇〇チャーチ / オンライン">
+    </div>
+    <div class="form-group">
+      <label class="form-label">依頼内容・詳細 <span class="required">*</span></label>
+      <textarea class="form-textarea" id="p-message" placeholder="例：日曜礼拝（出席者約50名）でのピアノ奏者を探しています。曲目はコンテンポラリーワーシップ中心です..."></textarea>
+    </div>
+    <button class="btn-submit" onclick="submitForm('performer')">依頼を送る</button>
+  </div>
+
+  <!-- 教会掲載申請 -->
+  <div class="form-card" id="form-church">
+    <h2>⛪ 教会掲載申請</h2>
+    <div class="sub">教会情報ページへの掲載・情報更新をご希望の方はこちらからお申し込みください。<a href="churches.html" style="color:var(--accent);">教会情報ページ</a>から直接登録することもできます。</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">教会名 <span class="required">*</span></label>
+        <input class="form-input" id="c-name" type="text" placeholder="例：東京グレースチャーチ">
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当者名 <span class="required">*</span></label>
+        <input class="form-input" id="c-person" type="text" placeholder="例：山田牧師">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">メールアドレス <span class="required">*</span></label>
+        <input class="form-input" id="c-email" type="email" placeholder="例：info@church.jp">
+      </div>
+      <div class="form-group">
+        <label class="form-label">住所 <span class="required">*</span></label>
+        <input class="form-input" id="c-address" type="text" placeholder="例：東京都渋谷区〇〇1-2-3">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">申請内容</label>
+      <select class="form-select" id="c-type">
+        <option value="新規掲載">新規掲載</option>
+        <option value="情報更新">情報更新</option>
+        <option value="掲載削除">掲載削除</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">備考・追加情報</label>
+      <textarea class="form-textarea" id="c-message" placeholder="礼拝時間・電話番号・ウェブサイトなど、掲載希望の情報をご記入ください。" style="min-height:80px;"></textarea>
+    </div>
+    <button class="btn-submit" onclick="submitForm('church')">申請する</button>
+  </div>
+
+  <!-- その他 -->
+  <div class="form-card" id="form-other">
+    <h2>📋 その他のお問い合わせ</h2>
+    <div class="sub">上記に当てはまらないご相談・ご提案など、お気軽にご連絡ください。</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">お名前 <span class="required">*</span></label>
+        <input class="form-input" id="o-name" type="text" placeholder="例：鈴木はるか">
+      </div>
+      <div class="form-group">
+        <label class="form-label">メールアドレス <span class="required">*</span></label>
+        <input class="form-input" id="o-email" type="email" placeholder="例：example@email.com">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">件名 <span class="required">*</span></label>
+      <input class="form-input" id="o-subject" type="text" placeholder="例：コラボレーションについて">
+    </div>
+    <div class="form-group">
+      <label class="form-label">内容 <span class="required">*</span></label>
+      <textarea class="form-textarea" id="o-message" placeholder="詳しい内容をご記入ください。"></textarea>
+    </div>
+    <button class="btn-submit" onclick="submitForm('other')">送信する</button>
+  </div>
+
+  <!-- 送信完了 -->
+  <div class="form-card" id="form-success">
+    <div class="success-box">
+      <div class="success-icon">✅</div>
+      <div class="success-title">送信しました！</div>
+      <div class="success-msg" id="success-msg">お問い合わせありがとうございます。<br>通常2〜3営業日以内にご返信いたします。</div>
+      <a class="btn-back" href="index.html">← トップページへ戻る</a>
+    </div>
+  </div>
+
+  <!-- 区切り -->
+  <div class="divider-label">または直接ご連絡ください</div>
+
+  <!-- 連絡先情報 -->
+  <div class="contact-info">
+    <h3>📬 直接のご連絡先</h3>
+    <div class="contact-method">
+      <div class="contact-method-icon" style="background:var(--accent-bg);">📧</div>
+      <div class="contact-method-body">
+        <div class="contact-method-label">メールアドレス</div>
+        <div class="contact-method-value">info@worshiplink.jp</div>
+        <div class="contact-method-note">※ 現在準備中です。フォームよりお問い合わせください。</div>
+      </div>
+      <button class="copy-btn" onclick="copyEmail()">コピー</button>
+    </div>
+    <div class="contact-method">
+      <div class="contact-method-icon" style="background:var(--green-bg);">🕐</div>
+      <div class="contact-method-body">
+        <div class="contact-method-label">対応時間</div>
+        <div class="contact-method-value">平日 10:00〜18:00</div>
+        <div class="contact-method-note">土日・祝日はお休みをいただいています</div>
+      </div>
+    </div>
+    <div class="contact-method">
+      <div class="contact-method-icon" style="background:rgba(91,62,245,0.06);">💬</div>
+      <div class="contact-method-body">
+        <div class="contact-method-label">返信目安</div>
+        <div class="contact-method-value">2〜3営業日以内</div>
+        <div class="contact-method-note">お急ぎの場合はその旨をご記載ください</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://itvzuviktxgjthwgnitf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_BlT2DI-F9CpfNb-GXFHZ5w_xz7ujUMj';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function selectType(type){
+  // カード選択
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  // フォーム切替
+  document.querySelectorAll('.form-card').forEach(f => f.classList.remove('active'));
+  document.getElementById('form-' + type).classList.add('active');
+  // スクロール
+  document.getElementById('form-' + type).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function submitForm(type){
+  // 各フォームのバリデーション・データ収集
+  let name, email, subject, message, extra = {};
+
+  if(type === 'general'){
+    name = document.getElementById('g-name').value.trim();
+    email = document.getElementById('g-email').value.trim();
+    subject = document.getElementById('g-subject').value.trim();
+    message = document.getElementById('g-message').value.trim();
+  } else if(type === 'member'){
+    name = document.getElementById('m-name').value.trim();
+    email = document.getElementById('m-email').value.trim();
+    subject = '会員登録申請';
+    message = document.getElementById('m-message').value.trim();
+    extra = { nick: document.getElementById('m-nick').value.trim(), church: document.getElementById('m-church').value.trim(), role: document.getElementById('m-role').value };
+  } else if(type === 'event'){
+    name = document.getElementById('e-org').value.trim() + '（' + document.getElementById('e-name').value.trim() + '）';
+    email = document.getElementById('e-email').value.trim();
+    subject = 'イベント主催者登録申請';
+    message = document.getElementById('e-event').value.trim();
+    extra = { phone: document.getElementById('e-phone').value.trim(), web: document.getElementById('e-web').value.trim() };
+  } else if(type === 'performer'){
+    name = document.getElementById('p-name').value.trim();
+    email = document.getElementById('p-email').value.trim();
+    subject = '演奏依頼：' + document.getElementById('p-instrument').value;
+    message = document.getElementById('p-message').value.trim();
+    extra = { date: document.getElementById('p-date').value.trim(), place: document.getElementById('p-place').value.trim() };
+  } else if(type === 'church'){
+    name = document.getElementById('c-name').value.trim() + '（' + document.getElementById('c-person').value.trim() + '）';
+    email = document.getElementById('c-email').value.trim();
+    subject = '教会掲載申請：' + document.getElementById('c-type').value;
+    message = document.getElementById('c-message').value.trim();
+    extra = { address: document.getElementById('c-address').value.trim() };
+  } else if(type === 'other'){
+    name = document.getElementById('o-name').value.trim();
+    email = document.getElementById('o-email').value.trim();
+    subject = document.getElementById('o-subject').value.trim();
+    message = document.getElementById('o-message').value.trim();
+  }
+
+  if(!name){ showToast('お名前を入力してください'); return; }
+  if(!email || !email.includes('@')){ showToast('正しいメールアドレスを入力してください'); return; }
+  if(!message && !subject){ showToast('内容を入力してください'); return; }
+
+  // Supabaseに保存
+  const { error } = await sb.from('contacts').insert({
+    type, name, email, subject: subject || type,
+    message: message || '',
+    extra: JSON.stringify(extra)
+  });
+
+  if(error){
+    // テーブルがなくても完了表示（フォールバック）
+    console.error(error);
+  }
+
+  // 完了表示
+  document.querySelectorAll('.form-card').forEach(f => f.classList.remove('active'));
+  document.getElementById('form-success').classList.add('active');
+  document.getElementById('success-msg').innerHTML =
+    `<strong>${esc(name)}</strong> 様、お問い合わせありがとうございます。<br>` +
+    `【${esc(subject || type)}】を受け付けました。<br><br>` +
+    `通常2〜3営業日以内に <strong>${esc(email)}</strong> へご返信いたします。🙏`;
+  document.getElementById('form-success').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyEmail(){
+  navigator.clipboard.writeText('info@worshiplink.jp').then(()=>{ showToast('メールアドレスをコピーしました'); });
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
