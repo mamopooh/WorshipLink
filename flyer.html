@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorshipLink — チラシ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Lato:wght@400;700;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f4fbf6; --surface: #ffffff; --surface2: #edf7f1;
+    --border: rgba(0,0,0,0.07); --border2: rgba(0,0,0,0.12);
+    --text: #0f1f0f; --text2: #3d5c44; --text3: #7a9a80;
+    --accent: #5b3ef5; --accent2: #7c63f8;
+    --accent-bg: rgba(91,62,245,0.08); --accent-border: rgba(91,62,245,0.22);
+    --green: #1e8c4a; --green-bg: rgba(30,140,74,0.08);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.10);
+    --radius: 16px; --radius-sm: 10px;
+  }
+  body { font-family: "Noto Sans JP", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border2);
+    box-shadow: var(--shadow-sm);
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 64px;
+  }
+  .logo { font-family: "Lato", sans-serif; font-size: 20px; font-weight: 900; color: var(--text); display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .logo-cross { width: 20px; height: 26px; position: relative; flex-shrink: 0; }
+  .logo-cross::before, .logo-cross::after { content: ""; position: absolute; background: var(--accent); border-radius: 3px; }
+  .logo-cross::before { width: 5px; height: 26px; left: 50%; transform: translateX(-50%); }
+  .logo-cross::after { width: 20px; height: 5px; top: 7px; left: 50%; transform: translateX(-50%); }
+  .logo span { color: var(--accent2); }
+  .back-btn { font-size: 12px; font-weight: 500; color: var(--accent); text-decoration: none; padding: 6px 14px; border: 1.5px solid var(--accent-border); border-radius: 20px; background: var(--accent-bg); }
+
+  .page { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* チラシ本体 */
+  .flyer {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* ヒーロー部分 */
+  .flyer-hero {
+    background: linear-gradient(145deg, #2a1a70 0%, #1a0f50 50%, #0f1a40 100%);
+    padding: 2.5rem 2rem 2.25rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .flyer-hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(91,62,245,0.4) 0%, transparent 65%);
+  }
+  /* 十字架 */
+  .flyer-cross-wrap { position: relative; width: 56px; height: 74px; margin: 0 auto 1.5rem; }
+  .flyer-cross-vert {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    width: 12px; height: 74px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(200,180,255,0.8) 100%);
+    border-radius: 6px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.4);
+  }
+  .flyer-cross-horiz {
+    position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+    width: 56px; height: 12px;
+    background: linear-gradient(90deg, rgba(200,180,255,0.8) 0%, rgba(255,255,255,0.95) 50%, rgba(200,180,255,0.8) 100%);
+    border-radius: 6px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.4);
+  }
+  .flyer-cross-glow {
+    position: absolute; inset: -20px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 65%);
+    border-radius: 50%;
+    animation: glow 3s ease-in-out infinite;
+  }
+  @keyframes glow { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+  .flyer-app-name {
+    font-family: "Lato", sans-serif;
+    font-size: 42px; font-weight: 900;
+    color: #fff; letter-spacing: -1px;
+    position: relative; margin-bottom: 6px;
+    text-shadow: 0 2px 20px rgba(91,62,245,0.5);
+  }
+  .flyer-app-name span { color: #c8b8ff; }
+  .flyer-app-sub {
+    font-size: 14px; font-weight: 500;
+    color: rgba(255,255,255,0.8);
+    position: relative; letter-spacing: 0.5px;
+  }
+
+  /* QRセクション */
+  .flyer-qr-section {
+    padding: 2rem 2rem 1.5rem;
+    display: flex; flex-direction: column; align-items: center;
+    border-bottom: 1px solid var(--border2);
+    background: var(--surface);
+  }
+  .qr-card {
+    background: #fff;
+    border: 2px solid var(--border2);
+    border-radius: 20px;
+    padding: 1.25rem 1.5rem;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 1rem;
+  }
+  .qr-card img { border-radius: 8px; display: block; }
+  .qr-scan-label {
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .qr-url { font-size: 10px; color: var(--text3); font-family: monospace; }
+  .qr-note { font-size: 13px; color: var(--text2); text-align: center; line-height: 1.7; }
+  .qr-note strong { color: var(--text); }
+
+  /* 機能紹介 */
+  .flyer-features { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border2); }
+  .features-heading { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 1rem; }
+  .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .feature-item {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .feature-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .feature-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .feature-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+
+  /* フッター */
+  .flyer-footer { padding: 1.25rem 2rem; background: var(--surface2); text-align: center; }
+  .flyer-footer-main { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .flyer-footer-sub { font-size: 11px; color: var(--text3); line-height: 1.6; }
+  .free-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--green-bg); color: var(--green);
+    border: 1px solid rgba(30,140,74,0.25);
+    border-radius: 20px; font-size: 12px; font-weight: 700;
+    padding: 4px 14px; margin-top: 8px;
+  }
+
+  /* URL更新フォーム */
+  .url-form {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 1.25rem;
+    margin-top: 1.5rem; box-shadow: var(--shadow-sm);
+  }
+  .url-form-title { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 10px; }
+  .url-row { display: flex; gap: 8px; }
+  .url-input {
+    flex: 1; background: var(--surface2);
+    border: 1.5px solid var(--border2); border-radius: var(--radius-sm);
+    padding: 9px 12px; color: var(--text); font-size: 12px;
+    outline: none; font-family: monospace;
+  }
+  .url-input:focus { border-color: var(--accent); }
+  .btn-update {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius-sm); padding: 9px 16px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: "Noto Sans JP", sans-serif; white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(91,62,245,0.3);
+  }
+
+  /* 印刷ボタン */
+  .btn-area { text-align: center; margin-top: 1.5rem; }
+  .btn-print {
+    background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 13px 32px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: "Noto Sans JP", sans-serif;
+    box-shadow: 0 4px 16px rgba(91,62,245,0.3);
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .btn-print:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-note { font-size: 12px; color: var(--text3); margin-top: 8px; }
+
+  @media print {
+    header, .btn-area, .url-form { display: none !important; }
+    body { background: #fff; }
+    .page { margin: 0; padding: 0; max-width: 100%; }
+    .flyer { border: none; border-radius: 0; box-shadow: none; }
+  }
+  @media (max-width: 480px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .flyer-hero { padding: 2rem 1.25rem 1.75rem; }
+    .flyer-features, .flyer-qr-section { padding: 1.25rem; }
+  }
+</style>
+<script src="i18n.js"></script>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html"><div class="logo-cross"></div>Worship<span>Link</span></a>
+  <a href="index.html" class="back-btn">← トップへ</a>
+</header>
+
+<div class="page">
+  <div class="flyer">
+
+    <!-- ヒーロー -->
+    <div class="flyer-hero">
+      <div class="flyer-cross-wrap">
+        <div class="flyer-cross-glow"></div>
+        <div class="flyer-cross-vert"></div>
+        <div class="flyer-cross-horiz"></div>
+      </div>
+      <div class="flyer-app-name">Worship<span>Link</span></div>
+      <div class="flyer-app-sub">ワーシップ・コミュニティアプリ</div>
+    </div>
+
+    <!-- QRコード -->
+    <div class="flyer-qr-section">
+      <div class="qr-card">
+        <img id="qrImg" src="data:image/png;base64,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" width="200" height="200" alt="QRコード">
+        <div class="qr-scan-label">📱 QRコードをスキャン</div>
+        <div class="qr-url" id="qrUrlDisplay">https://mamopooh.github.io/WorshipLink/</div>
+      </div>
+      <div class="qr-note">
+        スマートフォンのカメラで読み込むだけで<br>
+        すぐにアプリが開きます。<strong>登録・インストール不要・無料</strong>
+      </div>
+    </div>
+
+    <!-- 機能紹介 -->
+    <div class="flyer-features">
+      <div class="features-heading">できること</div>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🤝</div>
+          <div>
+            <div class="feature-name">コミュニティ</div>
+            <div class="feature-desc">全国の仲間と投稿・いいね・コメントで交流</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎵</div>
+          <div>
+            <div class="feature-name">ライブ・チケット</div>
+            <div class="feature-desc">全国のワーシップイベントに参加申込</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎹</div>
+          <div>
+            <div class="feature-name">演奏者マッチング</div>
+            <div class="feature-desc">演奏者を探す・自分を登録してアピール</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⛪</div>
+          <div>
+            <div class="feature-name">教会情報</div>
+            <div class="feature-desc">全国の教会をマップと一覧で検索</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="flyer-footer">
+      <div class="flyer-footer-main">🕊️ 信仰の有無に関わらず、どなたでも歓迎します</div>
+      <div class="flyer-footer-sub">クリスチャンも、一般の方も、一緒に賛美・祈り・つながりを</div>
+      <div class="free-badge">🎁 完全無料でご利用いただけます</div>
+    </div>
+
+  </div>
+
+  <!-- 印刷ボタン -->
+  <div class="btn-area">
+    <button class="btn-print" onclick="window.print()">🖨️ このページを印刷する</button>
+    <div class="btn-note">印刷するとそのままチラシとして使えます</div>
+  </div>
+
+  <!-- URL更新フォーム -->
+  <div class="url-form">
+    <div class="url-form-title">🔗 URLを変更してQRコードを更新する</div>
+    <div class="url-row">
+      <input class="url-input" id="urlInput" type="text" value="https://mamopooh.github.io/WorshipLink/" placeholder="新しいURLを入力">
+      <button class="btn-update" onclick="updateQR()">QR更新</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function updateQR(){
+  const url = document.getElementById("urlInput").value.trim();
+  if(!url){ alert(window.i18n ? i18n.t("URLを入力してください") : "URLを入力してください"); return; }
+  const encoded = encodeURIComponent(url);
+  document.getElementById("qrImg").src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encoded + "&color=0f1f0f&bgcolor=ffffff&margin=10";
+  document.getElementById("qrUrlDisplay").textContent = url;
+}
+</script>
+</body>
+</html>
